@@ -1,0 +1,152 @@
+[
+  {
+    "id": "trade-001",
+    "symbol": "BTCUSD",
+    "direction": "BUY",
+    "lot_size": 0.5,
+    "entry": 42350.00,
+    "exit": 42890.00,
+    "pnl": 270.00,
+    "timestamp": "2024-01-15T09:30:00.000Z"
+  },
+  {
+    "id": "trade-002",
+    "symbol": "AAPL",
+    "direction": "BUY",
+    "lot_size": 50.0,
+    "entry": 185.50,
+    "exit": 188.20,
+    "pnl": 135.00,
+    "timestamp": "2024-01-15T11:45:00.000Z"
+  },
+  {
+    "id": "trade-003",
+    "symbol": "ETHUSD",
+    "direction": "BUY",
+    "lot_size": 2.0,
+    "entry": 2245.50,
+    "exit": 2210.30,
+    "pnl": -70.40,
+    "timestamp": "2024-01-15T14:20:00.000Z"
+  },
+  {
+    "id": "trade-004",
+    "symbol": "ETHUSD",
+    "direction": "BUY",
+    "lot_size": 4.5,
+    "entry": 2215.00,
+    "exit": 2195.00,
+    "pnl": -90.00,
+    "timestamp": "2024-01-15T14:35:00.000Z"
+  },
+  {
+    "id": "trade-005",
+    "symbol": "TSLA",
+    "direction": "SELL",
+    "lot_size": 25.0,
+    "entry": 248.50,
+    "exit": 251.20,
+    "pnl": -67.50,
+    "timestamp": "2024-01-15T15:10:00.000Z"
+  },
+  {
+    "id": "trade-006",
+    "symbol": "SOLUSD",
+    "direction": "BUY",
+    "lot_size": 10.0,
+    "entry": 98.50,
+    "exit": 101.20,
+    "pnl": 27.00,
+    "timestamp": "2024-01-15T16:30:00.000Z"
+  },
+  {
+    "id": "trade-007",
+    "symbol": "NVDA",
+    "direction": "BUY",
+    "lot_size": 30.0,
+    "entry": 495.20,
+    "exit": 502.80,
+    "pnl": 228.00,
+    "timestamp": "2024-01-16T08:15:00.000Z"
+  },
+  {
+    "id": "trade-008",
+    "symbol": "GBPUSD",
+    "direction": "SELL",
+    "lot_size": 0.6,
+    "entry": 1.2710,
+    "exit": 1.2730,
+    "pnl": -120.00,
+    "timestamp": "2024-01-16T10:45:00.000Z"
+  },
+  {
+    "id": "trade-009",
+    "symbol": "GBPUSD",
+    "direction": "SELL",
+    "lot_size": 1.8,
+    "entry": 1.2735,
+    "exit": 1.2745,
+    "pnl": -180.00,
+    "timestamp": "2024-01-16T11:05:00.000Z"
+  },
+  {
+    "id": "trade-010",
+    "symbol": "MSFT",
+    "direction": "BUY",
+    "lot_size": 40.0,
+    "entry": 375.80,
+    "exit": 378.50,
+    "pnl": 108.00,
+    "timestamp": "2024-01-16T13:20:00.000Z"
+  },
+  {
+    "id": "trade-011",
+    "symbol": "ETHUSD",
+    "direction": "SELL",
+    "lot_size": 3.0,
+    "entry": 2280.00,
+    "exit": 2245.00,
+    "pnl": 105.00,
+    "timestamp": "2024-01-16T15:40:00.000Z"
+  },
+  {
+    "id": "trade-012",
+    "symbol": "GOOGL",
+    "direction": "SELL",
+    "lot_size": 20.0,
+    "entry": 142.30,
+    "exit": 143.80,
+    "pnl": -30.00,
+    "timestamp": "2024-01-17T09:00:00.000Z"
+  },
+  {
+    "id": "trade-013",
+    "symbol": "GOOGL",
+    "direction": "SELL",
+    "lot_size": 45.0,
+    "entry": 143.50,
+    "exit": 144.20,
+    "pnl": -31.50,
+    "timestamp": "2024-01-17T09:25:00.000Z"
+  },
+  {
+    "id": "trade-014",
+    "symbol": "BTCUSD",
+    "direction": "BUY",
+    "lot_size": 2.5,
+    "entry": 44500.00,
+    "exit": 44200.00,
+    "pnl": -750.00,
+    "timestamp": "2024-01-17T10:15:00.000Z"
+  },
+  {
+    "id": "trade-015",
+    "symbol": "AMZN",
+    "direction": "BUY",
+    "lot_size": 35.0,
+    "entry": 152.40,
+    "exit": 154.10,
+    "pnl": 59.50,
+    "timestamp": "2024-01-17T14:30:00.000Z"
+  }
+]
