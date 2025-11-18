@@ -18,8 +18,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const { url, method } = req;
-  
-  try {
     // Health check
     if (url === '/health' || url === '/api/health') {
       res.status(200).json({ status: 'ok' });
