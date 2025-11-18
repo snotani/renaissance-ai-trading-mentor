@@ -1,4 +1,4 @@
-# Trader Performance Agent (OrionAI Coach)
+# Trader Performance Agent (Renaissance Coach)
 
 An AI-powered system that analyzes trading patterns, identifies behavioral risks, and generates personalized coaching insights.
 

@@ -51,7 +51,7 @@ export class CoachingService {
     const anomalyText = `Risk Score: ${anomalyResults.riskScore}/100\nDetected Behaviors:\n${behaviorsText}`;
 
     // Build the complete prompt as per design document template
-    const prompt = `System: You are the OrionAI Trader Performance Coach. Your job is to evaluate the trader's recent trades, analyze anomalies, and provide clear, actionable coaching advice in simple language. Always be constructive, supportive, and specific.
+    const prompt = `System: You are the Renaissance Trader Performance Coach. Your job is to evaluate the trader's recent trades, analyze anomalies, and provide clear, actionable coaching advice in simple language. Always be constructive, supportive, and specific.
 
 User: Here are the trader's last trades:
 ${recentTradesText}

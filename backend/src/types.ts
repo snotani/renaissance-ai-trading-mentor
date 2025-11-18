@@ -32,17 +32,22 @@ export interface PatternIndicators {
     severity: 'low' | 'medium' | 'high';
     message: string;
   };
-  tradeFrequency: {
-    tradesPerHour: number;
-    status: 'normal' | 'elevated' | 'excessive';
+  profitConsistency: {
+    winRate: number;
+    avgWin: number;
+    avgLoss: number;
+    profitFactor: number;
+    status: 'excellent' | 'good' | 'poor';
+    message: string;
   };
   tiltRevenge: {
     detected: boolean;
     instances: number;
     message: string;
   };
-  volatilityMismatch: {
-    detected: boolean;
+  riskReward: {
+    ratio: number;
+    status: 'excellent' | 'good' | 'poor';
     message: string;
   };
 }

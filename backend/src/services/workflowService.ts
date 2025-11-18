@@ -68,7 +68,7 @@ export class WorkflowService {
   /**
    * Converts anomaly results to pattern indicators for UI display
    */
-  private convertToPatternIndicators(anomalyResult: AnomalyResult): PatternIndicators {
+  private convertToPatternIndicators(anomalyResult: AnomalyResult, trades: Trade[]): PatternIndicators {
     const overLeverageBehavior = anomalyResult.detectedBehaviors.find(
       (b) => b.type === 'over-leverage'
     );
@@ -78,9 +78,12 @@ export class WorkflowService {
     const tiltBehavior = anomalyResult.detectedBehaviors.find(
       (b) => b.type === 'tilt'
     );
-    const volatilityBehavior = anomalyResult.detectedBehaviors.find(
-      (b) => b.type === 'volatility-mismatch'
-    );
+
+    // Calculate profit consistency metrics
+    const profitConsistency = this.calculateProfitConsistency(trades);
+    
+    // Calculate risk/reward ratio
+    const riskReward = this.calculateRiskReward(trades);
 
     return {
       overLeverage: {
@@ -88,10 +91,7 @@ export class WorkflowService {
         severity: overLeverageBehavior?.severity || 'low',
         message: overLeverageBehavior?.description || 'No over-leverage detected',
       },
-      tradeFrequency: {
-        tradesPerHour: 0, // Not implemented in MVP
-        status: 'normal',
-      },
+      profitConsistency,
       tiltRevenge: {
         detected: !!(revengeTradingBehavior || tiltBehavior),
         instances:
@@ -101,10 +101,89 @@ export class WorkflowService {
           tiltBehavior?.description ||
           'No tilt or revenge trading detected',
       },
-      volatilityMismatch: {
-        detected: !!volatilityBehavior,
-        message: volatilityBehavior?.description || 'No volatility mismatch detected',
-      },
+      riskReward,
+    };
+  }
+
+  /**
+   * Calculates profit consistency metrics
+   */
+  private calculateProfitConsistency(trades: Trade[]) {
+    const winningTrades = trades.filter(t => t.pnl > 0);
+    const losingTrades = trades.filter(t => t.pnl < 0);
+    
+    const winRate = trades.length > 0 ? (winningTrades.length / trades.length) * 100 : 0;
+    const avgWin = winningTrades.length > 0 
+      ? winningTrades.reduce((sum, t) => sum + t.pnl, 0) / winningTrades.length 
+      : 0;
+    const avgLoss = losingTrades.length > 0 
+      ? Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0) / losingTrades.length)
+      : 0;
+    
+    const totalWins = winningTrades.reduce((sum, t) => sum + t.pnl, 0);
+    const totalLosses = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0));
+    const profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? 999 : 0;
+    
+    let status: 'excellent' | 'good' | 'poor';
+    if (winRate >= 60 && profitFactor >= 2) {
+      status = 'excellent';
+    } else if (winRate >= 45 && profitFactor >= 1.5) {
+      status = 'good';
+    } else {
+      status = 'poor';
+    }
+    
+    const message = `Win rate: ${winRate.toFixed(1)}%, Profit factor: ${profitFactor.toFixed(2)}. ${
+      status === 'excellent' ? 'Excellent consistency!' :
+      status === 'good' ? 'Good performance, room for improvement.' :
+      'Focus on improving win rate and profit factor.'
+    }`;
+    
+    return {
+      winRate,
+      avgWin,
+      avgLoss,
+      profitFactor,
+      status,
+      message,
+    };
+  }
+
+  /**
+   * Calculates risk/reward ratio
+   */
+  private calculateRiskReward(trades: Trade[]) {
+    const winningTrades = trades.filter(t => t.pnl > 0);
+    const losingTrades = trades.filter(t => t.pnl < 0);
+    
+    const avgWin = winningTrades.length > 0 
+      ? winningTrades.reduce((sum, t) => sum + t.pnl, 0) / winningTrades.length 
+      : 0;
+    const avgLoss = losingTrades.length > 0 
+      ? Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0) / losingTrades.length)
+      : 0;
+    
+    const ratio = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? 999 : 0;
+    
+    let status: 'excellent' | 'good' | 'poor';
+    if (ratio >= 2) {
+      status = 'excellent';
+    } else if (ratio >= 1.5) {
+      status = 'good';
+    } else {
+      status = 'poor';
+    }
+    
+    const message = `Average win: $${avgWin.toFixed(2)}, Average loss: $${avgLoss.toFixed(2)}. ${
+      status === 'excellent' ? 'Excellent risk management!' :
+      status === 'good' ? 'Good risk/reward balance.' :
+      'Consider improving your risk/reward ratio.'
+    }`;
+    
+    return {
+      ratio,
+      status,
+      message,
     };
   }
 
@@ -189,7 +268,7 @@ export class WorkflowService {
       // Build final result
       const result: CoachingResult = {
         coaching,
-        patterns: this.convertToPatternIndicators(anomalyResults),
+        patterns: this.convertToPatternIndicators(anomalyResults, recentTrades),
         riskScore: anomalyResults.riskScore,
         timestamp: new Date().toISOString(),
       };
