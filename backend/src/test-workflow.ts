@@ -69,10 +69,12 @@ async function testWorkflow() {
         console.log(`\nPattern Indicators:`);
         console.log(`- Over-leverage: ${status.result?.patterns.overLeverage.detected ? 'YES' : 'NO'} (${status.result?.patterns.overLeverage.severity})`);
         console.log(`  ${status.result?.patterns.overLeverage.message}`);
+        console.log(`- Profit Consistency: ${status.result?.patterns.profitConsistency.status.toUpperCase()} (Win Rate: ${status.result?.patterns.profitConsistency.winRate.toFixed(1)}%)`);
+        console.log(`  ${status.result?.patterns.profitConsistency.message}`);
         console.log(`- Tilt/Revenge: ${status.result?.patterns.tiltRevenge.detected ? 'YES' : 'NO'} (${status.result?.patterns.tiltRevenge.instances} instances)`);
         console.log(`  ${status.result?.patterns.tiltRevenge.message}`);
-        console.log(`- Volatility Mismatch: ${status.result?.patterns.volatilityMismatch.detected ? 'YES' : 'NO'}`);
-        console.log(`  ${status.result?.patterns.volatilityMismatch.message}`);
+        console.log(`- Risk/Reward Ratio: ${status.result?.patterns.riskReward.ratio.toFixed(2)}:1 (${status.result?.patterns.riskReward.status.toUpperCase()})`);
+        console.log(`  ${status.result?.patterns.riskReward.message}`);
         console.log(`\nCoaching Insights:`);
         console.log(status.result?.coaching);
         break;
