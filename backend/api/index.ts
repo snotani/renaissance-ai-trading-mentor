@@ -1,127 +1,119 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import { getAllMockTrades } from '../src/mockData';
-import { WorkflowService } from '../src/services/workflowService';
-import { EmbeddingService } from '../src/services/embeddingService';
-import { QdrantService } from '../src/services/qdrantService';
-import { AnomalyService } from '../src/services/anomalyService';
-import { CoachingService } from '../src/services/coachingService';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const app = express();
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // Handle OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-// Middleware - Configure CORS properly for Vercel
-app.use(cors({
-  origin: '*', // Allow all origins for now
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-app.use(express.json());
+  const { url, method } = req;
+  
+  try {
+    // Health check
+    if (url === '/health' || url === '/api/health') {
+      res.status(200).json({ status: 'ok' });
+      return;
+    }
 
-// Initialize services
-const geminiApiKey = process.env.GEMINI_API_KEY || '';
-const qdrantUrl = process.env.QDRANT_URL || 'http://localhost:6333';
-const qdrantApiKey = process.env.QDRANT_API_KEY;
+    // GET /api/trades
+    if ((url === '/api/trades' || url?.startsWith('/api/trades')) && method === 'GET') {
+      // Import dynamically to avoid cold start issues
+      const { getAllMockTrades } = await import('../src/mockData');
+      const trades = getAllMockTrades();
+      res.status(200).json({ trades });
+      return;
+    }
 
-if (!geminiApiKey) {
-  console.warn('Warning: GEMINI_API_KEY not set in environment variables');
-}
+    // POST /api/coaching/trigger
+    if ((url === '/api/coaching/trigger' || url?.startsWith('/api/coaching/trigger')) && method === 'POST') {
+      // Import services dynamically
+      const { WorkflowService } = await import('../src/services/workflowService');
+      const { EmbeddingService } = await import('../src/services/embeddingService');
+      const { QdrantService } = await import('../src/services/qdrantService');
+      const { AnomalyService } = await import('../src/services/anomalyService');
+      const { CoachingService } = await import('../src/services/coachingService');
 
-const embeddingService = new EmbeddingService(geminiApiKey);
-const qdrantService = new QdrantService(qdrantUrl, qdrantApiKey);
-const anomalyService = new AnomalyService();
-const coachingService = new CoachingService(geminiApiKey);
-const workflowService = new WorkflowService(
-  embeddingService,
-  qdrantService,
-  anomalyService,
-  coachingService
-);
+      const geminiApiKey = process.env.GEMINI_API_KEY || '';
+      const qdrantUrl = process.env.QDRANT_URL || '';
+      const qdrantApiKey = process.env.QDRANT_API_KEY;
 
-// Initialize Qdrant collection
-let initialized = false;
-async function initializeServices() {
-  if (!initialized) {
-    try {
+      const embeddingService = new EmbeddingService(geminiApiKey);
+      const qdrantService = new QdrantService(qdrantUrl, qdrantApiKey);
+      const anomalyService = new AnomalyService();
+      const coachingService = new CoachingService(geminiApiKey);
+      const workflowService = new WorkflowService(
+        embeddingService,
+        qdrantService,
+        anomalyService,
+        coachingService
+      );
+
+      // Initialize Qdrant
       await qdrantService.initializeCollection();
-      console.log('Qdrant collection initialized successfully');
-      initialized = true;
-    } catch (error) {
-      console.error('Failed to initialize Qdrant collection:', error);
+      
+      const workflowId = await workflowService.executeWorkflow();
+      res.status(200).json({ workflowId });
+      return;
     }
+
+    // GET /api/coaching/status/:workflowId
+    if (url?.startsWith('/api/coaching/status/') && method === 'GET') {
+      const workflowId = url.split('/').pop();
+      
+      if (!workflowId) {
+        res.status(400).json({ error: 'Missing workflowId parameter' });
+        return;
+      }
+
+      // Import services dynamically
+      const { WorkflowService } = await import('../src/services/workflowService');
+      const { EmbeddingService } = await import('../src/services/embeddingService');
+      const { QdrantService } = await import('../src/services/qdrantService');
+      const { AnomalyService } = await import('../src/services/anomalyService');
+      const { CoachingService } = await import('../src/services/coachingService');
+
+      const geminiApiKey = process.env.GEMINI_API_KEY || '';
+      const qdrantUrl = process.env.QDRANT_URL || '';
+      const qdrantApiKey = process.env.QDRANT_API_KEY;
+
+      const embeddingService = new EmbeddingService(geminiApiKey);
+      const qdrantService = new QdrantService(qdrantUrl, qdrantApiKey);
+      const anomalyService = new AnomalyService();
+      const coachingService = new CoachingService(geminiApiKey);
+      const workflowService = new WorkflowService(
+        embeddingService,
+        qdrantService,
+        anomalyService,
+        coachingService
+      );
+
+      const workflowResult = workflowService.getWorkflowStatus(workflowId);
+
+      if (!workflowResult) {
+        res.status(404).json({
+          error: 'Workflow not found',
+          message: `No workflow found with ID: ${workflowId}`,
+        });
+        return;
+      }
+
+      res.status(200).json(workflowResult);
+      return;
+    }
+
+    // 404 for unknown routes
+    res.status(404).json({ error: 'Not found', url, method });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
-
-// Handle OPTIONS requests for CORS preflight
-app.options('*', cors());
-
-// Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
-});
-
-// GET /api/trades
-app.get('/api/trades', async (req: Request, res: Response) => {
-  try {
-    await initializeServices();
-    const trades = getAllMockTrades();
-    res.json({ trades });
-  } catch (error) {
-    console.error('Error fetching trades:', error);
-    res.status(500).json({
-      error: 'Failed to fetch trades',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
-// POST /api/coaching/trigger
-app.post('/api/coaching/trigger', async (req: Request, res: Response) => {
-  try {
-    await initializeServices();
-    const workflowId = await workflowService.executeWorkflow();
-    res.json({ workflowId });
-  } catch (error) {
-    console.error('Error triggering coaching workflow:', error);
-    res.status(500).json({
-      error: 'Failed to trigger coaching workflow',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
-// GET /api/coaching/status/:workflowId
-app.get('/api/coaching/status/:workflowId', async (req: Request, res: Response) => {
-  try {
-    await initializeServices();
-    const { workflowId } = req.params;
-    
-    if (!workflowId) {
-      res.status(400).json({
-        error: 'Missing workflowId parameter',
-      });
-      return;
-    }
-
-    const workflowResult = workflowService.getWorkflowStatus(workflowId);
-
-    if (!workflowResult) {
-      res.status(404).json({
-        error: 'Workflow not found',
-        message: `No workflow found with ID: ${workflowId}`,
-      });
-      return;
-    }
-
-    res.json(workflowResult);
-  } catch (error) {
-    console.error('Error fetching workflow status:', error);
-    res.status(500).json({
-      error: 'Failed to fetch workflow status',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
-// Export for Vercel
-export default app;
