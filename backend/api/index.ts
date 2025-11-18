@@ -1,22 +1,23 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers - MUST be first
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
-  
-  // Handle OPTIONS preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  try {
+    // Set CORS headers - MUST be first
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    );
+    
+    // Handle OPTIONS preflight
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
 
-  const { url, method } = req;
+    const { url, method } = req;
   
   try {
     // Health check
@@ -115,6 +116,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(404).json({ error: 'Not found', url, method });
   } catch (error) {
     console.error('Error:', error);
+    // Make sure CORS headers are set even on error
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
