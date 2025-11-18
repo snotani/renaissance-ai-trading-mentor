@@ -9,8 +9,13 @@ import { CoachingService } from '../src/services/coachingService';
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware - Configure CORS properly for Vercel
+app.use(cors({
+  origin: '*', // Allow all origins for now
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Initialize services
@@ -46,6 +51,9 @@ async function initializeServices() {
     }
   }
 }
+
+// Handle OPTIONS requests for CORS preflight
+app.options('*', cors());
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
